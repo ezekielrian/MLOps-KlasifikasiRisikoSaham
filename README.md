@@ -17,7 +17,7 @@ Repositori ini mengikuti konvensi standar industri agar mudah dinavigasi, direpr
 ```text
 MLOps-KlasifikasiRisikoSaham/
 ├── .devcontainer/        # Konfigurasi container Codespaces (Python 3.10 & Extensions)
-├── config/               # File konfigurasi (hyperparameters, database config, pipeline)
+├── configs/               # File konfigurasi (hyperparameters, database config, pipeline)
 ├── data/
 │   ├── processed/        # Data yang telah dibersihkan dan siap untuk modeling
 │   └── raw/              # Data mentah langsung dari sumber (yfinance)
