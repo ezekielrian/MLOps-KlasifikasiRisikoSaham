@@ -17,7 +17,7 @@ Repositori ini mengikuti konvensi standar industri agar mudah dinavigasi, direpr
 ```text
 MLOps-KlasifikasiRisikoSaham/
 ├── .devcontainer/        # Konfigurasi container Codespaces (Python 3.10 & Extensions)
-├── configs/               # File konfigurasi (hyperparameters, database config, pipeline)
+├── configs/              # File konfigurasi (hyperparameters, database config, pipeline)
 ├── data/
 │   ├── processed/        # Data yang telah dibersihkan dan siap untuk modeling
 │   └── raw/              # Data mentah langsung dari sumber (yfinance)
@@ -25,7 +25,8 @@ MLOps-KlasifikasiRisikoSaham/
 ├── models/               # Artefak model hasil proses training (misal: .pkl, .joblib)
 ├── notebooks/            # Jupyter notebooks untuk Exploratory Data Analysis (EDA)
 ├── src/                  # Source code utama untuk pipeline MLOps
-│   ├── data/             # Skrip ekstraksi dan ingestion data
+│   ├── ingest_data.py    # Skrip pengumpul data dinamis (LK-04)
+│   ├── preprocess.py     # Skrip pembersihan data time-series (LK-04)
 │   ├── features/         # Skrip rekayasa fitur (RSI, MACD, Volatilitas)
 │   ├── models/           # Skrip pelatihan, evaluasi, dan inferensi model
 │   └── hello.py          # Skrip environment testing (yfinance)
@@ -41,3 +42,25 @@ MLOps-KlasifikasiRisikoSaham/
 2. Klik tombol `<> Code`, pilih tab **Codespaces**, lalu klik **Create codespace**.
 3. Sistem akan otomatis menginstal Python 3.10 dan ekstensi yang dibutuhkan.
 4. Lakukan pengujian *environment* dengan menjalankan perintah: `python src/hello.py`
+
+---
+
+## ⚙️ Instruksi Eksekusi Data Pipeline (LK-04)
+
+Bagian ini mendokumentasikan cara menjalankan pipeline pengumpulan dan pembersihan data dinamis (Ingestion & Preprocessing) untuk domain *financial time-series*.
+
+### 1. Instalasi Dependencies
+Pastikan environment sudah siap dengan menjalankan perintah berikut di terminal:
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Cara Menjalankan Data Ingestion
+Skrip ini akan mengambil data transaksi historis dari Yahoo Finance secara terprogram, memiliki proteksi *error handling*, dan akan menyimpannya secara non-destruktif (menggunakan nama file berbasis *timestamp*).
+* **Perintah:** `python src/ingest_data.py`
+* **Output:** Sebuah file CSV (contoh: `raw_stock_data_20260927_180053.csv`) berisi > 500 baris data OHLCV di dalam direktori `data/raw/`.
+
+### 3. Cara Menjalankan Data Preprocessing
+Skrip ini dirancang untuk membaca file data mentah *terbaru*, melakukan deduplikasi baris, dan *missing value handling* (Forward Fill) untuk mencegah anomali pada pemodelan.
+* **Perintah:** `python src/preprocess.py`
+* **Output:** Menghasilkan file data bersih dengan nama `processed_stock_data.csv` yang tersimpan di dalam direktori `data/processed/`.
