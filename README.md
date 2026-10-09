@@ -9,6 +9,7 @@ Sistem ini dirancang menggunakan prinsip **MLOps (Machine Learning Operations)**
 * **Bahasa Pemrograman:** Python 3.10
 * **Environment:** GitHub Codespaces (terisolasi via Docker Devcontainer)
 * **Sumber Data:** API `yfinance` (Data OHLCV Historis)
+* **Data Versioning:** DVC (Data Version Control) dengan Local Remote Storage
 * **Branching Strategy:** GitHub Flow (Standardisasi eksperimen kolaboratif)
 
 ## 📂 Struktur Direktori (Cookiecutter Data Science)
@@ -17,20 +18,24 @@ Repositori ini mengikuti konvensi standar industri agar mudah dinavigasi, direpr
 ```text
 MLOps-KlasifikasiRisikoSaham/
 ├── .devcontainer/        # Konfigurasi container Codespaces (Python 3.10 & Extensions)
+├── .dvc/                 # Konfigurasi internal Data Version Control (DVC)
 ├── configs/              # File konfigurasi (hyperparameters, database config, pipeline)
 ├── data/
 │   ├── processed/        # Data yang telah dibersihkan dan siap untuk modeling
+│   │   └── processed_stock_data.csv.dvc  # File tracker DVC untuk silsilah data bersih
 │   └── raw/              # Data mentah langsung dari sumber (yfinance)
+│       └── raw_stock_data_*.csv.dvc      # File tracker DVC untuk silsilah data mentah
 ├── docs/                 # Dokumentasi tambahan proyek
 ├── models/               # Artefak model hasil proses training (misal: .pkl, .joblib)
 ├── notebooks/            # Jupyter notebooks untuk Exploratory Data Analysis (EDA)
 ├── src/                  # Source code utama untuk pipeline MLOps
-│   ├── ingest_data.py    # Skrip pengumpul data dinamis (LK-04)
-│   ├── preprocess.py     # Skrip pembersihan data time-series (LK-04)
+│   ├── ingest_data.py    # Skrip pengumpul data dinamis
+│   ├── preprocess.py     # Skrip pembersihan data time-series
 │   ├── features/         # Skrip rekayasa fitur (RSI, MACD, Volatilitas)
 │   ├── models/           # Skrip pelatihan, evaluasi, dan inferensi model
 │   └── hello.py          # Skrip environment testing (yfinance)
 ├── tests/                # Unit testing untuk pipeline dan model
+├── .dvcignore            # Daftar file yang diabaikan oleh DVC
 ├── .gitignore            # Daftar file yang diabaikan oleh Git
 ├── LICENSE               # Lisensi MIT
 ├── README.md             # Dokumentasi utama proyek
@@ -45,7 +50,7 @@ MLOps-KlasifikasiRisikoSaham/
 
 ---
 
-## ⚙️ Instruksi Eksekusi Data Pipeline (LK-04)
+## ⚙️ Instruksi Eksekusi Data Pipeline
 
 Bagian ini mendokumentasikan cara menjalankan pipeline pengumpulan dan pembersihan data dinamis (Ingestion & Preprocessing) untuk domain *financial time-series*.
 
@@ -64,3 +69,14 @@ Skrip ini akan mengambil data transaksi historis dari Yahoo Finance secara terpr
 Skrip ini dirancang untuk membaca file data mentah *terbaru*, melakukan deduplikasi baris, dan *missing value handling* (Forward Fill) untuk mencegah anomali pada pemodelan.
 * **Perintah:** `python src/preprocess.py`
 * **Output:** Menghasilkan file data bersih dengan nama `processed_stock_data.csv` yang tersimpan di dalam direktori `data/processed/`.
+
+### 🗄️ Data Lineage Management dengan DVC
+Proyek ini mengimplementasikan **Data Version Control** untuk memisahkan manajemen kode dan file biner berukuran besar. Dataset aslinya tidak lagi di commit ke Git, melainkan dikirim ke *Remote Storage* menggunakan DVC, sementara Git hanya menyimpan file *pointer* berukuran ringan (file `.dvc`).
+
+Implementasi *versioning* data ini sangat krusial karena akurasi model *machine learning* sangat bergantung pada dataset spesifik yang digunakan saat pelatihan. Mengingat data harian proyek ini diperbarui secara dinamis melalui arsitektur *continual learning*, DVC mengunci setiap transisi versi menggunakan *hash* unik agar kita selalu bisa mereproduksi versi data eksak dari masa lalu. Selain itu, pertumbuhan dataset dapat diaudit dengan jelas (*data lineage*) melalui riwayat *commit* Git, sekaligus menjaga efisiensi repositori karena file CSV berukuran besar tidak akan menyumbat kapasitas GitHub maupun memperlambat proses *clone*.
+
+### Cara Mereproduksi / Mengunduh Data 
+Jika Anda baru saja melakukan *clone* repositori ini, file CSV asli belum tersedia di direktori lokal. Anda harus menariknya dari *remote storage* DVC dengan menjalankan perintah:
+```bash
+dvc pull
+```
