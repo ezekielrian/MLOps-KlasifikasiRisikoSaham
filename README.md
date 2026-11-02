@@ -80,3 +80,35 @@ Jika Anda baru saja melakukan *clone* repositori ini, file CSV asli belum tersed
 ```bash
 dvc pull
 ```
+---
+
+## 🤖 Pelatihan Model & MLflow Tracking
+Proyek ini menggunakan **MLflow** untuk melacak eksperimen, merekam *hyperparameter*, dan membandingkan metrik evaluasi model (seperti *Akurasi* dan *F1-Score*) secara otomatis.
+- **Perintah Pelatihan:** `python src/models/train.py`
+- **Akses Dashboard MLflow:** Jalankan perintah `mlflow ui` di terminal, lalu buka *port* 5000 yang diteruskan oleh Codespaces.
+
+---
+
+## 🐳 Deployment (Docker & Flask API)
+Model terbaik yang telah didaftarkan ke MLflow Model Registry kemudian dikemas ke dalam *container* terisolasi menggunakan **Docker** dan diekspos sebagai layanan REST API menggunakan **Flask**.
+
+### Status Model Aktif (Production)
+Saat ini, model yang digunakan untuk inferensi API melalui Docker adalah **Model_Risiko_Saham_Ezekiel (Versi 1)** yang berada pada stage **Production** di MLflow. 
+
+**Alasan Pemilihan:**
+Model ini dipilih sebagai versi aktif karena memiliki performa klasifikasi (Akurasi/F1-Score) yang paling tinggi dan stabil selama fase eksperimen, serta telah terbukti berhasil melewati uji coba *containerization* dan validasi inferensi API tanpa kendala pada lingkungan *production*.
+
+### Cara Menjalankan API di Docker
+1. **Build Image Docker:**
+   ```bash
+   docker build -t model-saham-ezekiel:v1 .
+
+2. **Jalankan Container:**
+   ```bash
+   docker run -p 5000:5000 -d model-saham-ezekiel:v1
+
+1. **Uji Coba Prediksi**
+   ```bash
+   curl -X POST http://127.0.0.1:5000/predict \
+   -H "Content-Type: application/json" \
+   -d '{"features": [{"Open": 150.0, "High": 155.0, "Low": 149.0, "Volume": 10000}]}'
