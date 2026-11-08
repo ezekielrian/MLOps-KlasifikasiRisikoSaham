@@ -1,4 +1,7 @@
 [core]
-    remote = myremote
+    remote = dagshub
 ['remote "myremote"']
     url = /tmp/dvc_remote
+['remote "dagshub"']
+    url = s3://dvc
+    endpointurl = https://dagshub.com/ezekielrian/MLOps-KlasifikasiRisikoSaham.s3

@@ -5,3 +5,6 @@ mlflow
 scikit-learn
 flask
 skops
+pytest
+dvc
+dvc-s3
