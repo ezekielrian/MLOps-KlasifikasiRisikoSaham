@@ -77,7 +77,8 @@ def train_model(X_train, X_test, y_train, y_test, n_estimators: int, max_depth: 
         # Pencatatan Artefak Model
         mlflow.sklearn.log_model(
             model, 
-            "random_forest_model"
+            "random_forest_model",
+            skops_trusted_types=["sklearn.tree._tree.Tree"]
         )
         
         print(f"Run tersimpan -> n_estimators: {n_estimators:3}, max_depth: {max_depth:2} | Akurasi: {accuracy:.4f} | F1-Score: {f1:.4f}")
