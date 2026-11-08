@@ -8,3 +8,5 @@ skops
 pytest
 dvc
 dvc-s3
+boto3
+dagshub

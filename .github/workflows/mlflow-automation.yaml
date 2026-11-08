@@ -19,7 +19,7 @@ jobs:
       - name: Jalankan Unit Test (pytest)
         run: pytest tests/
 
-  training_and_registry:
+  training:
     runs-on: ubuntu-latest
     needs: testing
     env:
@@ -28,6 +28,7 @@ jobs:
       MLFLOW_TRACKING_PASSWORD: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      MLFLOW_S3_ENDPOINT_URL: "https://dagshub.com/ezekielrian/MLOps-KlasifikasiRisikoSaham.s3"
     steps:
       - name: Checkout kode
         uses: actions/checkout@v4
@@ -41,5 +42,25 @@ jobs:
         run: dvc pull
       - name: Jalankan Skrip Pelatihan
         run: python src/models/train.py
+
+  registry:
+    runs-on: ubuntu-latest
+    needs: training
+    env:
+      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+      MLFLOW_TRACKING_USERNAME: "ezekielrian"
+      MLFLOW_TRACKING_PASSWORD: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      MLFLOW_S3_ENDPOINT_URL: "https://dagshub.com/ezekielrian/MLOps-KlasifikasiRisikoSaham.s3"
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependensi
+        run: pip install -r requirements.txt
       - name: Evaluasi dan Promosi Model ke Staging
         run: python src/evaluate.py
