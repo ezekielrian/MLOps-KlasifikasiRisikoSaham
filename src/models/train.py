@@ -1,9 +1,12 @@
+import os
 import pandas as pd
 import mlflow
 import mlflow.sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
+
+os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
 
 RANDOM_SEED = 42
 
@@ -74,8 +77,7 @@ def train_model(X_train, X_test, y_train, y_test, n_estimators: int, max_depth: 
         # Pencatatan Artefak Model
         mlflow.sklearn.log_model(
             model, 
-            "random_forest_model", 
-            skops_trusted_types=["sklearn.tree._tree.Tree"]
+            "random_forest_model"
         )
         
         print(f"Run tersimpan -> n_estimators: {n_estimators:3}, max_depth: {max_depth:2} | Akurasi: {accuracy:.4f} | F1-Score: {f1:.4f}")

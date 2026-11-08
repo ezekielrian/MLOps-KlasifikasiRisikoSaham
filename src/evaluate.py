@@ -1,5 +1,8 @@
+import os
 import mlflow
 from mlflow.tracking import MlflowClient
+
+os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
 
 def evaluate_and_promote(threshold=0.50):
     client = MlflowClient()
