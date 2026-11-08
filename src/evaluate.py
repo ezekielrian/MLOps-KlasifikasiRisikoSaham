@@ -1,7 +1,7 @@
 import mlflow
 from mlflow.tracking import MlflowClient
 
-def evaluate_and_promote(threshold=0.85):
+def evaluate_and_promote(threshold=0.50):
     client = MlflowClient()
     experiment_name = "Klasifikasi_Risiko_Saham"
     experiment = client.get_experiment_by_name(experiment_name)
