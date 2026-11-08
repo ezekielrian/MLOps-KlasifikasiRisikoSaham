@@ -1,12 +1,9 @@
-import os
 import mlflow
 from mlflow.tracking import MlflowClient
 
-os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
-
 def evaluate_and_promote(threshold=0.50):
     client = MlflowClient()
-    experiment_name = "Eksperimen_Saham_Final"
+    experiment_name = "Klasifikasi_Saham_V2"
     experiment = client.get_experiment_by_name(experiment_name)
     
     if not experiment:
