@@ -37,6 +37,7 @@ def prepare_data(filepath: str):
     )
     
     return X_train, X_test, y_train, y_test
+
 def train_model(X_train, X_test, y_train, y_test, n_estimators: int, max_depth: int):
     """
     Melatih model RandomForestClassifier dan melacak eksperimen menggunakan MLflow.
@@ -80,7 +81,7 @@ def train_model(X_train, X_test, y_train, y_test, n_estimators: int, max_depth: 
         print(f"Run tersimpan -> n_estimators: {n_estimators:3}, max_depth: {max_depth:2} | Akurasi: {accuracy:.4f} | F1-Score: {f1:.4f}")
 
 if __name__ == "__main__":
-    mlflow.set_experiment("Klasifikasi_Risiko_Saham")
+    mlflow.set_experiment("Eksperimen_Saham_Final")
     data_path = "data/processed/processed_stock_data.csv"
     
     try:
