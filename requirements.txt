@@ -1,7 +1,7 @@
 yfinance==0.2.40
 pandas==2.1.0
 numpy<2.0
-mlflow
+mlflow==2.22.2
 scikit-learn
 flask
 skops

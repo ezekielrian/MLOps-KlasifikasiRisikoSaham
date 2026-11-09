@@ -81,7 +81,7 @@ def train_model(X_train, X_test, y_train, y_test, n_estimators: int, max_depth: 
         print(f"Run tersimpan -> n_estimators: {n_estimators:3}, max_depth: {max_depth:2} | Akurasi: {accuracy:.4f} | F1-Score: {f1:.4f}")
 
 if __name__ == "__main__":
-    mlflow.set_experiment("Klasifikasi_Saham_V2")
+    mlflow.set_experiment("Klasifikasi_Saham_V3")
     data_path = "data/processed/processed_stock_data.csv"
     
     try:
