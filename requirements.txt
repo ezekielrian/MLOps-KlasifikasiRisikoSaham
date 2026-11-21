@@ -10,3 +10,4 @@ dvc
 dvc-s3
 boto3
 dagshub
+psycopg2-binary
