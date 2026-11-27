@@ -7,59 +7,64 @@ services:
       POSTGRES_PASSWORD: mlflow_password
       POSTGRES_DB: mlflow_db
     volumes:
-      - pg-data:/var/lib/postgresql/data
+    - pg-data:/var/lib/postgresql/data
     networks:
-      - ml-net
+    - ml-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mlflow -d mlflow_db"]
+      test:
+      - CMD-SHELL
+      - pg_isready -U mlflow -d mlflow_db
       interval: 5s
       timeout: 5s
       retries: 10
-
   mlflow-server:
     build: .
     container_name: mlflow-server
-    command: >
-      mlflow server
-      --backend-store-uri postgresql://mlflow:mlflow_password@postgres:5432/mlflow_db
-      --serve-artifacts
-      --artifacts-destination /mlruns
-      --host 0.0.0.0
-      --port 5000
+    command: mlflow server --backend-store-uri postgresql://mlflow:mlflow_password@postgres:5432/mlflow_db
+      --serve-artifacts --artifacts-destination /mlruns --host 0.0.0.0 --port 5000
     ports:
-      - "5000:5000"
+    - 5000:5000
     volumes:
-      - mlflow-data:/mlruns
+    - mlflow-data:/mlruns
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - ml-net
+    - ml-net
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://localhost:5000/health')
       interval: 10s
       timeout: 5s
       retries: 10
-
   api-service:
-    build: .
-    container_name: api-service
-    environment:
-      MLFLOW_TRACKING_URI: http://mlflow-server:5000
-      MODEL_NAME: Model_Risiko_Saham_Ezekiel
-      MODEL_STAGE: Staging
-    ports:
-      - "8080:5000"
+    image: model-saham-serving:v1
+    expose:
+    - '8080'
+    deploy:
+      replicas: 3
     depends_on:
       mlflow-server:
         condition: service_healthy
     networks:
-      - ml-net
-
+    - ml-net
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-lb
+    ports:
+    - 8080:80
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+    - api-service
+    networks:
+    - ml-net
 networks:
   ml-net:
     driver: bridge
-
 volumes:
-  pg-data:
-  mlflow-data:
+  pg-data: null
+  mlflow-data: null

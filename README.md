@@ -180,3 +180,76 @@ Jalankan perintah berikut untuk menghentikan layanan dan mempertahankan data di 
 ```bash
 docker compose down
 ```
+
+---
+
+## 🚀 Model Serving & Load Balancing (MLflow + Nginx)
+
+### 1. Arsitektur Layanan
+
+- `api-service` menggunakan image `model-saham-serving:v1` dari model `Model_Risiko_Saham_Ezekiel` stage `Production`, dengan jumlah default `deploy.replicas: 3`.
+- Setiap replika menggunakan port internal `8080` tanpa pemetaan port host langsung agar tidak terjadi bentrok port.
+- Layanan `nginx` dengan nama kontainer `nginx-lb` menjadi pintu masuk API melalui pemetaan port `8080:80`.
+- Konfigurasi `nginx.conf` menggunakan DNS resolver internal Docker `127.0.0.11` untuk meneruskan request ke `api-service:8080` secara round-robin.
+
+### 2. Membangun Image Model
+
+Atur alamat MLflow Tracking, lalu bangun image dari model stage `Production`:
+
+```bash
+export MLFLOW_TRACKING_URI=http://localhost:5000
+
+mlflow models build-docker -m "models:/Model_Risiko_Saham_Ezekiel/Production" -n model-saham-serving:v1
+```
+
+### 3. Menjalankan Layanan
+
+Jalankan layanan sesuai konfigurasi `docker-compose.yaml`, lalu periksa status kontainer:
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+Secara default, `api-service` berjalan dengan 3 replika dan dapat diakses melalui Nginx pada port host `8080`.
+
+### 4. Mengakses Endpoint API
+
+Kirim request ke endpoint melalui Nginx Load Balancer:
+
+- **Metode:** `POST`
+- **URL:** `http://localhost:8080/invocations`
+- **Header:** `Content-Type: application/json`
+
+Contoh pengujian menggunakan `curl`:
+
+```bash
+curl -X POST http://localhost:8080/invocations \
+  -H "Content-Type: application/json" \
+  -d '{"dataframe_records": [{"Open": 9500, "High": 9650, "Low": 9450, "Volume": 50000000}]}' \
+  -w "\n"
+```
+
+Contoh respons:
+
+```json
+{"predictions": [0]}
+```
+
+### 5. Mengubah Jumlah Replika
+
+Untuk menambah jumlah replika dari 3 menjadi 5 tanpa membuat ulang kontainer yang sudah berjalan:
+
+```bash
+docker compose up -d --scale api-service=5 --no-recreate
+```
+
+Verifikasi jumlah dan status replika:
+
+```bash
+docker compose ps
+```
+
+Ganti angka `5` pada perintah tersebut sesuai jumlah replika yang dibutuhkan. Nginx otomatis mendeteksi replika baru melalui DNS internal Docker berkat konfigurasi `resolver 127.0.0.11` di `nginx.conf`.
+
+Untuk menjadikan perubahan jumlah replika sebagai konfigurasi permanen, ubah nilai `deploy.replicas` pada layanan `api-service` di `docker-compose.yaml`.
